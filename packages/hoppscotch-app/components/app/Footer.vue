@@ -4,16 +4,17 @@
       <div class="flex">
         <ButtonSecondary
           v-tippy="{ theme: 'tooltip' }"
-          :title="LEFT_SIDEBAR ? $t('hide.sidebar') : $t('show.sidebar')"
+          :title="EXPAND_NAVIGATION ? t('hide.sidebar') : t('show.sidebar')"
           svg="sidebar"
-          :class="{ 'transform -rotate-180': !LEFT_SIDEBAR }"
-          @click.native="LEFT_SIDEBAR = !LEFT_SIDEBAR"
+          class="transform"
+          :class="{ '-rotate-180': !EXPAND_NAVIGATION }"
+          @click.native="EXPAND_NAVIGATION = !EXPAND_NAVIGATION"
         />
         <ButtonSecondary
           v-tippy="{ theme: 'tooltip' }"
-          :title="`${
-            ZEN_MODE ? $t('action.turn_off') : $t('action.turn_on')
-          } ${$t('layout.zen_mode')}`"
+          :title="`${ZEN_MODE ? t('action.turn_off') : t('action.turn_on')} ${t(
+            'layout.zen_mode'
+          )}`"
           :svg="ZEN_MODE ? 'minimize' : 'maximize'"
           :class="{
             '!text-accent !focus-visible:text-accentDark !hover:text-accentDark':
@@ -35,20 +36,20 @@
               <ButtonSecondary
                 svg="help-circle"
                 class="!rounded-none"
-                :label="`${$t('app.help')}`"
+                :label="`${t('app.help')}`"
               />
             </template>
             <div class="flex flex-col">
               <SmartItem
                 svg="book"
-                :label="`${$t('app.documentation')}`"
+                :label="`${t('app.documentation')}`"
                 to="https://docs.hoppscotch.io"
                 blank
                 @click.native="$refs.options.tippy().hide()"
               />
               <SmartItem
                 svg="zap"
-                :label="`${$t('app.keyboard_shortcuts')}`"
+                :label="`${t('app.keyboard_shortcuts')}`"
                 @click.native="
                   () => {
                     showShortcuts = true
@@ -58,14 +59,14 @@
               />
               <SmartItem
                 svg="gift"
-                :label="`${$t('app.whats_new')}`"
+                :label="`${t('app.whats_new')}`"
                 to="https://docs.hoppscotch.io/changelog"
                 blank
                 @click.native="$refs.options.tippy().hide()"
               />
               <SmartItem
                 svg="message-circle"
-                :label="`${$t('app.chat_with_us')}`"
+                :label="`${t('app.chat_with_us')}`"
                 @click.native="
                   () => {
                     chatWithUs()
@@ -76,21 +77,21 @@
               <hr />
               <SmartItem
                 svg="github"
-                :label="`${$t('app.github')}`"
+                :label="`${t('app.github')}`"
                 to="https://github.com/hoppscotch/hoppscotch"
                 blank
                 @click.native="$refs.options.tippy().hide()"
               />
               <SmartItem
                 svg="twitter"
-                :label="`${$t('app.twitter')}`"
+                :label="`${t('app.twitter')}`"
                 to="https://hoppscotch.io/twitter"
                 blank
                 @click.native="$refs.options.tippy().hide()"
               />
               <SmartItem
                 svg="user-plus"
-                :label="`${$t('app.invite')}`"
+                :label="`${t('app.invite')}`"
                 @click.native="
                   () => {
                     showShare = true
@@ -100,14 +101,14 @@
               />
               <SmartItem
                 svg="lock"
-                :label="`${$t('app.terms_and_privacy')}`"
+                :label="`${t('app.terms_and_privacy')}`"
                 to="https://docs.hoppscotch.io/privacy"
                 blank
                 @click.native="$refs.options.tippy().hide()"
               />
-              <!-- <SmartItem :label="$t('app.status')" /> -->
-              <div class="flex opacity-50 py-2 px-4">
-                {{ `${$t("app.name")} ${$t("app.version")}` }}
+              <!-- <SmartItem :label="t('app.status')" /> -->
+              <div class="flex px-4 py-2 opacity-50">
+                {{ `${t("app.name")} ${t("app.version")}` }}
               </div>
             </div>
           </tippy>
@@ -115,32 +116,39 @@
         <ButtonSecondary
           v-tippy="{ theme: 'tooltip' }"
           svg="zap"
-          :title="$t('app.shortcuts')"
+          :title="t('app.shortcuts')"
           @click.native="showShortcuts = true"
         />
         <ButtonSecondary
           v-if="navigatorShare"
           v-tippy="{ theme: 'tooltip' }"
           svg="share-2"
-          :title="$t('request.share')"
+          :title="t('request.share')"
           @click.native="nativeShare()"
         />
         <ButtonSecondary
           v-tippy="{ theme: 'tooltip' }"
-          :title="COLUMN_LAYOUT ? $t('layout.row') : $t('layout.column')"
+          :title="COLUMN_LAYOUT ? t('layout.row') : t('layout.column')"
           svg="columns"
           class="transform"
           :class="{ 'rotate-90': !COLUMN_LAYOUT }"
           @click.native="COLUMN_LAYOUT = !COLUMN_LAYOUT"
         />
-        <ButtonSecondary
-          v-tippy="{ theme: 'tooltip' }"
-          :title="RIGHT_SIDEBAR ? $t('hide.sidebar') : $t('show.sidebar')"
-          svg="sidebar"
-          class="transform rotate-180"
-          :class="{ 'rotate-360': !RIGHT_SIDEBAR }"
-          @click.native="RIGHT_SIDEBAR = !RIGHT_SIDEBAR"
-        />
+        <span
+          class="transition transform"
+          :class="{
+            'rotate-180': SIDEBAR_ON_LEFT,
+          }"
+        >
+          <ButtonSecondary
+            v-tippy="{ theme: 'tooltip' }"
+            :title="SIDEBAR ? t('hide.sidebar') : t('show.sidebar')"
+            svg="sidebar-open"
+            class="transform"
+            :class="{ 'rotate-180': !SIDEBAR }"
+            @click.native="SIDEBAR = !SIDEBAR"
+          />
+        </span>
       </div>
     </div>
     <AppShortcuts :show="showShortcuts" @close="showShortcuts = false" />
@@ -148,60 +156,56 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "@nuxtjs/composition-api"
+<script setup lang="ts">
+import { ref, watch } from "@nuxtjs/composition-api"
 import { defineActionHandler } from "~/helpers/actions"
 import { showChat } from "~/helpers/support"
 import { useSetting } from "~/newstore/settings"
+import { useI18n } from "~/helpers/utils/composables"
 
-export default defineComponent({
-  setup() {
-    const showShortcuts = ref(false)
-    const showShare = ref(false)
+const t = useI18n()
+const showShortcuts = ref(false)
+const showShare = ref(false)
 
-    defineActionHandler("flyouts.keybinds.toggle", () => {
-      showShortcuts.value = !showShortcuts.value
-    })
-
-    defineActionHandler("modals.share.toggle", () => {
-      showShare.value = !showShare.value
-    })
-
-    return {
-      LEFT_SIDEBAR: useSetting("LEFT_SIDEBAR"),
-      RIGHT_SIDEBAR: useSetting("RIGHT_SIDEBAR"),
-      ZEN_MODE: useSetting("ZEN_MODE"),
-      COLUMN_LAYOUT: useSetting("COLUMN_LAYOUT"),
-
-      navigatorShare: !!navigator.share,
-
-      showShortcuts,
-      showShare,
-    }
-  },
-  watch: {
-    ZEN_MODE() {
-      this.LEFT_SIDEBAR = !this.ZEN_MODE
-    },
-  },
-  methods: {
-    nativeShare() {
-      if (navigator.share) {
-        navigator
-          .share({
-            title: "Hoppscotch",
-            text: "Hoppscotch • Open source API development ecosystem - Helps you create requests faster, saving precious time on development.",
-            url: "https://hoppscotch.io",
-          })
-          .then(() => {})
-          .catch(console.error)
-      } else {
-        // fallback
-      }
-    },
-    chatWithUs() {
-      showChat()
-    },
-  },
+defineActionHandler("flyouts.keybinds.toggle", () => {
+  showShortcuts.value = !showShortcuts.value
 })
+
+defineActionHandler("modals.share.toggle", () => {
+  showShare.value = !showShare.value
+})
+
+const EXPAND_NAVIGATION = useSetting("EXPAND_NAVIGATION")
+const SIDEBAR = useSetting("SIDEBAR")
+const ZEN_MODE = useSetting("ZEN_MODE")
+const COLUMN_LAYOUT = useSetting("COLUMN_LAYOUT")
+const SIDEBAR_ON_LEFT = useSetting("SIDEBAR_ON_LEFT")
+
+const navigatorShare = !!navigator.share
+
+watch(
+  () => ZEN_MODE.value,
+  () => {
+    EXPAND_NAVIGATION.value = !ZEN_MODE.value
+  }
+)
+
+const nativeShare = () => {
+  if (navigator.share) {
+    navigator
+      .share({
+        title: "Hoppscotch",
+        text: "Hoppscotch • Open source API development ecosystem - Helps you create requests faster, saving precious time on development.",
+        url: "https://hoppscotch.io",
+      })
+      .then(() => {})
+      .catch(console.error)
+  } else {
+    // fallback
+  }
+}
+
+const chatWithUs = () => {
+  showChat()
+}
 </script>

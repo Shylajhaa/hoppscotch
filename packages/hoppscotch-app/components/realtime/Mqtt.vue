@@ -1,40 +1,33 @@
 <template>
   <Splitpanes
     class="smart-splitter"
-    :dbl-click-splitter="false"
+    :rtl="SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768"
+    :class="{
+      '!flex-row-reverse': SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768,
+    }"
     :horizontal="!(windowInnerWidth.x.value >= 768)"
   >
-    <Pane class="hide-scrollbar !overflow-auto">
-      <Splitpanes
-        class="smart-splitter"
-        :dbl-click-splitter="false"
-        :horizontal="COLUMN_LAYOUT"
-      >
-        <Pane class="hide-scrollbar !overflow-auto">
+    <Pane size="75" min-size="65" class="hide-scrollbar !overflow-auto">
+      <Splitpanes class="smart-splitter" :horizontal="COLUMN_LAYOUT">
+        <Pane
+          :size="COLUMN_LAYOUT ? 45 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="request">
-            <div class="bg-primary flex p-4 top-0 z-10 sticky">
-              <div class="space-x-2 flex-1 inline-flex">
+            <div
+              class="bg-primary sticky top-0 z-10 flex flex-col p-4 space-y-4"
+            >
+              <div class="inline-flex flex-1 space-x-2">
                 <input
                   id="mqtt-url"
                   v-model="url"
-                  v-focus
                   type="url"
                   autocomplete="off"
                   spellcheck="false"
-                  class="
-                    bg-primaryLight
-                    border border-divider
-                    rounded
-                    text-secondaryDark
-                    w-full
-                    py-2
-                    px-4
-                    hover:border-dividerDark
-                    focus-visible:bg-transparent
-                    focus-visible:border-dividerDark
-                  "
+                  class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark w-full px-4 py-2 border rounded"
                   :placeholder="$t('mqtt.url')"
                   :disabled="connectionState"
+                  @keyup.enter="validUrl ? toggleConnection() : null"
                 />
                 <ButtonPrimary
                   id="connect"
@@ -49,10 +42,31 @@
                   @click.native="toggleConnection"
                 />
               </div>
+              <div class="flex space-x-4">
+                <input
+                  id="mqtt-username"
+                  v-model="username"
+                  type="text"
+                  spellcheck="false"
+                  class="input"
+                  :placeholder="$t('authorization.username')"
+                />
+                <input
+                  id="mqtt-password"
+                  v-model="password"
+                  type="password"
+                  spellcheck="false"
+                  class="input"
+                  :placeholder="$t('authorization.password')"
+                />
+              </div>
             </div>
           </AppSection>
         </Pane>
-        <Pane class="hide-scrollbar !overflow-auto">
+        <Pane
+          :size="COLUMN_LAYOUT ? 65 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="response">
             <RealtimeLog :title="$t('mqtt.log')" :log="log" />
           </AppSection>
@@ -60,15 +74,14 @@
       </Splitpanes>
     </Pane>
     <Pane
-      v-if="RIGHT_SIDEBAR"
-      max-size="35"
+      v-if="SIDEBAR"
       size="25"
       min-size="20"
       class="hide-scrollbar !overflow-auto"
     >
       <AppSection label="messages">
-        <div class="flex flex-col flex-1 p-4 inline-flex">
-          <label for="pub_topic" class="font-semibold text-secondaryLight">
+        <div class="flex inline-flex flex-col flex-1 p-4">
+          <label for="pub_topic" class="text-secondaryLight font-semibold">
             {{ $t("mqtt.topic") }}
           </label>
         </div>
@@ -83,12 +96,12 @@
             spellcheck="false"
           />
         </div>
-        <div class="flex flex-1 p-4 items-center justify-between">
-          <label for="mqtt-message" class="font-semibold text-secondaryLight">
+        <div class="flex items-center justify-between flex-1 p-4">
+          <label for="mqtt-message" class="text-secondaryLight font-semibold">
             {{ $t("mqtt.communication") }}
           </label>
         </div>
-        <div class="flex space-x-2 px-4">
+        <div class="flex px-4 space-x-2">
           <input
             id="mqtt-message"
             v-model="msg"
@@ -107,19 +120,13 @@
           />
         </div>
         <div
-          class="
-            border-t border-dividerLight
-            flex flex-col flex-1
-            mt-4
-            p-4
-            inline-flex
-          "
+          class="border-dividerLight flex inline-flex flex-col flex-1 p-4 mt-4 border-t"
         >
-          <label for="sub_topic" class="font-semibold text-secondaryLight">
+          <label for="sub_topic" class="text-secondaryLight font-semibold">
             {{ $t("mqtt.topic") }}
           </label>
         </div>
-        <div class="flex space-x-2 px-4">
+        <div class="flex px-4 space-x-2">
           <input
             id="sub_topic"
             v-model="sub_topic"
@@ -160,8 +167,9 @@ export default defineComponent({
   setup() {
     return {
       windowInnerWidth: useWindowSize(),
-      RIGHT_SIDEBAR: useSetting("RIGHT_SIDEBAR"),
+      SIDEBAR: useSetting("SIDEBAR"),
       COLUMN_LAYOUT: useSetting("COLUMN_LAYOUT"),
+      SIDEBAR_ON_LEFT: useSetting("SIDEBAR_ON_LEFT"),
     }
   },
   data() {
@@ -177,6 +185,8 @@ export default defineComponent({
       log: null,
       manualDisconnect: false,
       subscriptionState: false,
+      username: "",
+      password: "",
     }
   },
   computed: {
@@ -195,7 +205,7 @@ export default defineComponent({
       this.debouncer()
     },
   },
-  mounted() {
+  created() {
     if (process.browser) {
       this.worker = this.$worker.createRejexWorker()
       this.worker.addEventListener("message", this.workerResponseHandler)
@@ -223,15 +233,24 @@ export default defineComponent({
       ]
       const parseUrl = new URL(this.url)
       this.client = new Paho.Client(
-        parseUrl.hostname,
+        `${parseUrl.hostname}${
+          parseUrl.pathname !== "/" ? parseUrl.pathname : ""
+        }`,
         parseUrl.port !== "" ? Number(parseUrl.port) : 8081,
         "hoppscotch"
       )
-      this.client.connect({
+      const connectOptions = {
         onSuccess: this.onConnectionSuccess,
         onFailure: this.onConnectionFailure,
-        useSSL: true,
-      })
+        useSSL: parseUrl.protocol !== "ws:",
+      }
+      if (this.username !== "") {
+        connectOptions.userName = this.username
+      }
+      if (this.password !== "") {
+        connectOptions.password = this.password
+      }
+      this.client.connect(connectOptions)
       this.client.onConnectionLost = this.onConnectionLost
       this.client.onMessageArrived = this.onMessageArrived
 
@@ -258,9 +277,7 @@ export default defineComponent({
         color: "var(--accent-color)",
         ts: new Date().toLocaleTimeString(),
       })
-      this.$toast.success(this.$t("state.connected"), {
-        icon: "sync",
-      })
+      this.$toast.success(this.$t("state.connected"))
     },
     onMessageArrived({ payloadString, destinationName }) {
       this.log.push({
@@ -291,13 +308,9 @@ export default defineComponent({
       this.connectingState = false
       this.connectionState = false
       if (this.manualDisconnect) {
-        this.$toast.error(this.$t("state.disconnected"), {
-          icon: "sync_disabled",
-        })
+        this.$toast.error(this.$t("state.disconnected"))
       } else {
-        this.$toast.error(this.$t("error.something_went_wrong"), {
-          icon: "error_outline",
-        })
+        this.$toast.error(this.$t("error.something_went_wrong"))
       }
       this.manualDisconnect = false
       this.subscriptionState = false

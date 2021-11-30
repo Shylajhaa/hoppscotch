@@ -4,16 +4,7 @@
     :class="{ 'rounded border border-divider': saveRequest }"
   >
     <div
-      class="
-        divide-y divide-dividerLight
-        bg-primary
-        border-b border-dividerLight
-        rounded-t
-        flex flex-col
-        top-0
-        z-10
-        sticky
-      "
+      class="divide-dividerLight bg-primary border-dividerLight sticky top-0 z-10 flex flex-col border-b divide-y rounded-t"
     >
       <div v-if="!saveRequest" class="search-wrappe">
         <input
@@ -21,7 +12,7 @@
           type="search"
           autocomplete="off"
           :placeholder="$t('action.search')"
-          class="bg-transparent flex w-full py-2 pr-2 pl-4"
+          class="flex w-full py-2 pl-4 pr-2 bg-transparent"
         />
       </div>
       <CollectionsChooseType
@@ -31,7 +22,7 @@
         @update-collection-type="updateCollectionType"
         @update-selected-team="updateSelectedTeam"
       />
-      <div class="flex flex-1 justify-between">
+      <div class="flex justify-between flex-1">
         <ButtonSecondary
           v-if="
             collectionsType.type == 'team-collections' &&
@@ -95,6 +86,7 @@
         @add-folder="addFolder($event)"
         @edit-folder="editFolder($event)"
         @edit-request="editRequest($event)"
+        @duplicate-request="duplicateRequest($event)"
         @update-team-collections="updateTeamCollections"
         @select-collection="$emit('use-collection', collection)"
         @unselect-collection="$emit('remove-collection', collection)"
@@ -106,9 +98,15 @@
     </div>
     <div
       v-if="filteredCollections.length === 0 && filterText.length === 0"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <span class="text-center pb-4">
+      <img
+        :src="`/images/states/${$colorMode.value}/pack.svg`"
+        loading="lazy"
+        class="inline-flex flex-col object-contain object-center w-16 h-16 my-4"
+        :alt="$t('empty.collections')"
+      />
+      <span class="pb-4 text-center">
         {{ $t("empty.collections") }}
       </span>
       <ButtonSecondary
@@ -120,20 +118,22 @@
         v-tippy="{ theme: 'tooltip' }"
         :title="$t('team.no_access')"
         :label="$t('add.new')"
+        class="mb-4"
         filled
       />
       <ButtonSecondary
         v-else
         :label="$t('add.new')"
         filled
+        class="mb-4"
         @click.native="displayModalAdd(true)"
       />
     </div>
     <div
       v-if="filterText.length !== 0 && filteredCollections.length === 0"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <i class="opacity-75 pb-2 material-icons">manage_search</i>
+      <i class="material-icons pb-2 opacity-75">manage_search</i>
       <span class="text-center">
         {{ $t("state.nothing_found") }} "{{ filterText }}"
       </span>
@@ -195,6 +195,7 @@ import {
   editRESTFolder,
   removeRESTRequest,
   editRESTRequest,
+  saveRESTRequestAs,
 } from "~/newstore/collections"
 import {
   useReadonlyStream,
@@ -351,14 +352,10 @@ export default defineComponent({
             this.collectionsType.selectedTeam.id
           )
           .then(() => {
-            this.$toast.success(this.$t("collection.created"), {
-              icon: "done",
-            })
+            this.$toast.success(this.$t("collection.created"))
           })
           .catch((e) => {
-            this.$toast.error(this.$t("error.something_went_wrong"), {
-              icon: "error_outline",
-            })
+            this.$toast.error(this.$t("error.something_went_wrong"))
             console.error(e)
           })
       }
@@ -367,9 +364,7 @@ export default defineComponent({
     // Intented to be called by CollectionEdit modal submit event
     updateEditingCollection(newName) {
       if (!newName) {
-        this.$toast.error(this.$t("collection.invalid_name"), {
-          icon: "error_outline",
-        })
+        this.$toast.error(this.$t("collection.invalid_name"))
         return
       }
       if (this.collectionsType.type === "my-collections") {
@@ -386,14 +381,10 @@ export default defineComponent({
         teamUtils
           .renameCollection(this.$apollo, newName, this.editingCollection.id)
           .then(() => {
-            this.$toast.success(this.$t("collection.renamed"), {
-              icon: "done",
-            })
+            this.$toast.success(this.$t("collection.renamed"))
           })
           .catch((e) => {
-            this.$toast.error(this.$t("error.something_went_wrong"), {
-              icon: "error_outline",
-            })
+            this.$toast.error(this.$t("error.something_went_wrong"))
             console.error(e)
           })
       }
@@ -410,14 +401,10 @@ export default defineComponent({
         teamUtils
           .renameCollection(this.$apollo, name, this.editingFolder.id)
           .then(() => {
-            this.$toast.success(this.$t("folder.renamed"), {
-              icon: "done",
-            })
+            this.$toast.success(this.$t("folder.renamed"))
           })
           .catch((e) => {
-            this.$toast.error(this.$t("error.something_went_wrong"), {
-              icon: "error_outline",
-            })
+            this.$toast.error(this.$t("error.something_went_wrong"))
             console.error(e)
           })
       }
@@ -450,15 +437,11 @@ export default defineComponent({
             this.editingRequestIndex
           )
           .then(() => {
-            this.$toast.success(this.$t("request.renamed"), {
-              icon: "done",
-            })
+            this.$toast.success(this.$t("request.renamed"))
             this.$emit("update-team-collections")
           })
           .catch((e) => {
-            this.$toast.error(this.$t("error.something_went_wrong"), {
-              icon: "error_outline",
-            })
+            this.$toast.error(this.$t("error.something_went_wrong"))
             console.error(e)
           })
       }
@@ -523,15 +506,11 @@ export default defineComponent({
               },
             })
             .then(() => {
-              this.$toast.success(this.$t("folder.created"), {
-                icon: "done",
-              })
+              this.$toast.success(this.$t("folder.created"))
               this.$emit("update-team-collections")
             })
             .catch((e) => {
-              this.$toast.error(this.$t("error.something_went_wrong"), {
-                icon: "error_outline",
-              })
+              this.$toast.error(this.$t("error.something_went_wrong"))
               console.error(e)
             })
         }
@@ -595,9 +574,7 @@ export default defineComponent({
         }
 
         removeRESTCollection(collectionIndex)
-        this.$toast.success(this.$t("state.deleted"), {
-          icon: "delete",
-        })
+        this.$toast.success(this.$t("state.deleted"))
       } else if (collectionsType.type === "team-collections") {
         // Cancel pick if picked collection is deleted
         if (
@@ -623,14 +600,10 @@ export default defineComponent({
               },
             })
             .then(() => {
-              this.$toast.success(this.$t("state.deleted"), {
-                icon: "delete",
-              })
+              this.$toast.success(this.$t("state.deleted"))
             })
             .catch((e) => {
-              this.$toast.error(this.$t("error.something_went_wrong"), {
-                icon: "error_outline",
-              })
+              this.$toast.error(this.$t("error.something_went_wrong"))
               console.error(e)
             })
         }
@@ -648,9 +621,7 @@ export default defineComponent({
           this.$emit("select", { picked: null })
         }
         removeRESTRequest(folderPath, requestIndex)
-        this.$toast.success(this.$t("state.deleted"), {
-          icon: "delete",
-        })
+        this.$toast.success(this.$t("state.deleted"))
       } else if (this.collectionsType.type === "team-collections") {
         // Cancel pick if the picked item is being deleted
         if (
@@ -664,17 +635,19 @@ export default defineComponent({
         teamUtils
           .deleteRequest(this.$apollo, requestIndex)
           .then(() => {
-            this.$toast.success(this.$t("state.deleted"), {
-              icon: "delete",
-            })
+            this.$toast.success(this.$t("state.deleted"))
           })
           .catch((e) => {
-            this.$toast.error(this.$t("error.something_went_wrong"), {
-              icon: "error_outline",
-            })
+            this.$toast.error(this.$t("error.something_went_wrong"))
             console.error(e)
           })
       }
+    },
+    duplicateRequest({ folderPath, request }) {
+      saveRESTRequestAs(folderPath, {
+        ...cloneDeep(request),
+        name: `${request.name} - ${this.$t("action.duplicate")}`,
+      })
     },
   },
 })

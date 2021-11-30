@@ -36,7 +36,7 @@
   <p>
     <a href="https://hoppscotch.io">
       <img
-        src="https://tiny.cc/hoppscotch_screenshot_1"
+        src="https://raw.githubusercontent.com/hoppscotch/hoppscotch/main/packages/hoppscotch-app/static/banner.png"
         alt="Screenshot"
         width="100%"
       />
@@ -46,7 +46,7 @@
 
 #### **Support**
 
-[![Chat on Discord](https://img.shields.io/badge/chat-Discord-7289DA?logo=discord)](https://hoppscotch.io/discord) [![Chat on Telegram](https://img.shields.io/badge/chat-Telegram-2CA5E0?logo=Telegram)](https://hoppscotch.io/telegram)
+[![Chat on Discord](https://img.shields.io/badge/chat-Discord-7289DA?logo=discord)](https://hoppscotch.io/discord) [![Chat on Telegram](https://img.shields.io/badge/chat-Telegram-2CA5E0?logo=telegram)](https://hoppscotch.io/telegram) [![Discuss on GitHub](https://img.shields.io/badge/discussions-GitHub-333333?logo=github)](https://github.com/hoppscotch/hoppscotch/discussions)
 
 <details open>
   <summary><b>Table of contents</b></summary>
@@ -89,7 +89,7 @@
 - `TRACE` - Performs a message loop-back test along the path to the target resource
 - `<custom>` - Some APIs use custom request methods such as `LIST`. Type in your custom methods.
 
-🌈 **Make it yours:** Customizable combinations for background, foreground and accent colors — [customize now ✨](https://hoppscotch.io/settings).
+🌈 **Make it yours:** Customizable combinations for background, foreground and accent colors — [customize now](https://hoppscotch.io/settings).
 
 **Theming**
 
@@ -256,9 +256,12 @@ _Add-ons are developed and maintained under **[Hoppscotch Organization](https://
 
 👨‍👩‍👧‍👦 **Teams β:** Helps you collaborate across your team to design, develop, and test APIs faster.
 
-- Unlimited team collections and shared requests
+- Unlimited teams
+- Unlimited shared collections
 - Unlimited team members
-- User roles
+- Role-based access control
+- Cloud sync
+- Multiple devices
 
 🚚 **Bulk Edit:** Edit key-value pairs in bulk.
 

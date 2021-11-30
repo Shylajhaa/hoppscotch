@@ -1,35 +1,25 @@
 <template>
   <Splitpanes
     class="smart-splitter"
-    :dbl-click-splitter="false"
+    :rtl="SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768"
+    :class="{
+      '!flex-row-reverse': SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768,
+    }"
     :horizontal="!(windowInnerWidth.x.value >= 768)"
   >
-    <Pane class="hide-scrollbar !overflow-auto">
-      <Splitpanes
-        class="smart-splitter"
-        :dbl-click-splitter="false"
-        :horizontal="COLUMN_LAYOUT"
-      >
-        <Pane class="hide-scrollbar !overflow-auto">
+    <Pane size="75" min-size="65" class="hide-scrollbar !overflow-auto">
+      <Splitpanes class="smart-splitter" :horizontal="COLUMN_LAYOUT">
+        <Pane
+          :size="COLUMN_LAYOUT ? 45 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="request">
-            <div class="bg-primary flex p-4 top-0 z-10 sticky">
-              <div class="space-x-2 flex-1 inline-flex">
+            <div class="bg-primary sticky top-0 z-10 flex p-4">
+              <div class="inline-flex flex-1 space-x-2">
                 <input
                   id="websocket-url"
                   v-model="url"
-                  v-focus
-                  class="
-                    bg-primaryLight
-                    border border-divider
-                    rounded
-                    text-secondaryDark
-                    w-full
-                    py-2
-                    px-4
-                    hover:border-dividerDark
-                    focus-visible:bg-transparent
-                    focus-visible:border-dividerDark
-                  "
+                  class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark w-full px-4 py-2 border rounded"
                   type="url"
                   autocomplete="off"
                   spellcheck="false"
@@ -54,19 +44,9 @@
               </div>
             </div>
             <div
-              class="
-                bg-primary
-                border-b border-dividerLight
-                flex flex-1
-                top-upperPrimaryStickyFold
-                pl-4
-                z-10
-                sticky
-                items-center
-                justify-between
-              "
+              class="bg-primary border-dividerLight top-upperPrimaryStickyFold sticky z-10 flex items-center justify-between flex-1 pl-4 border-b"
             >
-              <label class="font-semibold text-secondaryLight">
+              <label class="text-secondaryLight font-semibold">
                 {{ $t("websocket.protocols") }}
               </label>
               <div class="flex">
@@ -87,15 +67,11 @@
             <div
               v-for="(protocol, index) of protocols"
               :key="`protocol-${index}`"
-              class="
-                divide-x divide-dividerLight
-                border-b border-dividerLight
-                flex
-              "
+              class="divide-dividerLight border-dividerLight flex border-b divide-x"
             >
               <input
                 v-model="protocol.value"
-                class="bg-transparent flex flex-1 py-2 px-4"
+                class="flex flex-1 px-4 py-2 bg-transparent"
                 :placeholder="$t('count.protocol', { count: index + 1 })"
                 name="message"
                 type="text"
@@ -138,22 +114,24 @@
             </div>
             <div
               v-if="protocols.length === 0"
-              class="
-                flex flex-col
-                text-secondaryLight
-                p-4
-                items-center
-                justify-center
-              "
+              class="text-secondaryLight flex flex-col items-center justify-center p-4"
             >
-              <i class="opacity-75 pb-2 material-icons">topic</i>
-              <span class="text-center">
+              <img
+                :src="`/images/states/${$colorMode.value}/add_category.svg`"
+                loading="lazy"
+                class="inline-flex flex-col object-contain object-center w-16 h-16 my-4"
+                :alt="$t('empty.protocols')"
+              />
+              <span class="mb-4 text-center">
                 {{ $t("empty.protocols") }}
               </span>
             </div>
           </AppSection>
         </Pane>
-        <Pane class="hide-scrollbar !overflow-auto">
+        <Pane
+          :size="COLUMN_LAYOUT ? 65 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="response">
             <RealtimeLog
               :title="$t('websocket.log')"
@@ -164,22 +142,21 @@
       </Splitpanes>
     </Pane>
     <Pane
-      v-if="RIGHT_SIDEBAR"
-      max-size="35"
+      v-if="SIDEBAR"
       size="25"
       min-size="20"
       class="hide-scrollbar !overflow-auto"
     >
       <AppSection label="messages">
-        <div class="flex flex-col flex-1 p-4 inline-flex">
+        <div class="flex inline-flex flex-col flex-1 p-4">
           <label
             for="websocket-message"
-            class="font-semibold text-secondaryLight"
+            class="text-secondaryLight font-semibold"
           >
             {{ $t("websocket.communication") }}
           </label>
         </div>
-        <div class="flex space-x-2 px-4">
+        <div class="flex px-4 space-x-2">
           <input
             id="websocket-message"
             v-model="communication.input"
@@ -220,15 +197,16 @@ export default defineComponent({
   setup() {
     return {
       windowInnerWidth: useWindowSize(),
-      RIGHT_SIDEBAR: useSetting("RIGHT_SIDEBAR"),
+      SIDEBAR: useSetting("SIDEBAR"),
       COLUMN_LAYOUT: useSetting("COLUMN_LAYOUT"),
+      SIDEBAR_ON_LEFT: useSetting("SIDEBAR_ON_LEFT"),
     }
   },
   data() {
     return {
       connectionState: false,
       connectingState: false,
-      url: "wss://echo.websocket.org",
+      url: "wss://hoppscotch-websocket.herokuapp.com",
       isUrlValid: true,
       socket: null,
       communication: {
@@ -262,7 +240,7 @@ export default defineComponent({
       deep: true,
     },
   },
-  mounted() {
+  created() {
     if (process.browser) {
       this.worker = this.$worker.createRejexWorker()
       this.worker.addEventListener("message", this.workerResponseHandler)
@@ -309,9 +287,7 @@ export default defineComponent({
               ts: new Date().toLocaleTimeString(),
             },
           ]
-          this.$toast.success(this.$t("state.connected"), {
-            icon: "sync",
-          })
+          this.$toast.success(this.$t("state.connected"))
         }
         this.socket.onerror = () => {
           this.handleError()
@@ -324,9 +300,7 @@ export default defineComponent({
             color: "#ff5555",
             ts: new Date().toLocaleTimeString(),
           })
-          this.$toast.error(this.$t("state.disconnected"), {
-            icon: "sync_disabled",
-          })
+          this.$toast.error(this.$t("state.disconnected"))
         }
         this.socket.onmessage = ({ data }) => {
           this.communication.log.push({
@@ -337,9 +311,7 @@ export default defineComponent({
         }
       } catch (e) {
         this.handleError(e)
-        this.$toast.error(this.$t("error.something_went_wrong"), {
-          icon: "error_outline",
-        })
+        this.$toast.error(this.$t("error.something_went_wrong"))
       }
 
       logHoppRequestRunToAnalytics({
@@ -423,7 +395,6 @@ export default defineComponent({
       const oldProtocols = this.protocols.slice()
       this.$delete(this.protocols, index)
       this.$toast.success(this.$t("state.deleted"), {
-        icon: "delete",
         action: {
           text: this.$t("action.undo"),
           duration: 4000,

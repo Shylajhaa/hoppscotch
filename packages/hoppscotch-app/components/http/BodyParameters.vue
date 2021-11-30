@@ -1,19 +1,9 @@
 <template>
   <AppSection label="bodyParameters">
     <div
-      class="
-        bg-primary
-        border-b border-dividerLight
-        flex flex-1
-        top-upperTertiaryStickyFold
-        pl-4
-        z-10
-        sticky
-        items-center
-        justify-between
-      "
+      class="bg-primary border-dividerLight top-upperTertiaryStickyFold sticky z-10 flex items-center justify-between flex-1 pl-4 border-b"
     >
-      <label class="font-semibold text-secondaryLight">
+      <label class="text-secondaryLight font-semibold">
         {{ $t("request.body") }}
       </label>
       <div class="flex">
@@ -41,10 +31,9 @@
     <div
       v-for="(param, index) in bodyParams"
       :key="`param-${index}`"
-      class="divide-x divide-dividerLight border-b border-dividerLight flex"
+      class="divide-dividerLight border-dividerLight flex border-b divide-x"
     >
       <SmartEnvInput
-        v-if="EXPERIMENTAL_URL_BAR_ENABLED"
         v-model="param.key"
         :placeholder="`${$t('count.parameter', { count: index + 1 })}`"
         styles="
@@ -63,24 +52,8 @@
           })
         "
       />
-      <input
-        v-else
-        class="bg-transparent flex flex-1 py-2 px-4"
-        :placeholder="`${$t('count.parameter', { count: index + 1 })}`"
-        :name="'param' + index"
-        :value="param.key"
-        autofocus
-        @change="
-          updateBodyParam(index, {
-            key: $event.target.value,
-            value: param.value,
-            active: param.active,
-            isFile: param.isFile,
-          })
-        "
-      />
       <div v-if="param.isFile" class="file-chips-container hide-scrollbar">
-        <div class="space-x-2 file-chips-wrapper">
+        <div class="file-chips-wrapper space-x-2">
           <SmartDeletableChip
             v-for="(file, fileIndex) in param.value"
             :key="`param-${index}-file-${fileIndex}`"
@@ -92,7 +65,6 @@
       </div>
       <span v-else class="flex flex-1">
         <SmartEnvInput
-          v-if="EXPERIMENTAL_URL_BAR_ENABLED"
           v-model="param.value"
           :placeholder="`${$t('count.value', { count: index + 1 })}`"
           styles="
@@ -106,21 +78,6 @@
             updateBodyParam(index, {
               key: param.key,
               value: $event,
-              active: param.active,
-              isFile: param.isFile,
-            })
-          "
-        />
-        <input
-          v-else
-          class="bg-transparent flex flex-1 py-2 px-4"
-          :placeholder="`${$t('count.value', { count: index + 1 })}`"
-          :name="'value' + index"
-          :value="param.value"
-          @change="
-            updateBodyParam(index, {
-              key: param.key,
-              value: $event.target.value,
               active: param.active,
               isFile: param.isFile,
             })
@@ -184,15 +141,22 @@
     </div>
     <div
       v-if="bodyParams.length === 0"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <span class="text-center pb-4">
+      <img
+        :src="`/images/states/${$colorMode.value}/upload_single_file.svg`"
+        loading="lazy"
+        class="inline-flex flex-col object-contain object-center w-16 h-16 my-4"
+        :alt="$t('empty.body')"
+      />
+      <span class="pb-4 text-center">
         {{ $t("empty.body") }}
       </span>
       <ButtonSecondary
         :label="`${$t('add.new')}`"
         filled
         svg="plus"
+        class="mb-4"
         @click.native="addBodyParam"
       />
     </div>
@@ -210,7 +174,6 @@ import {
   updateFormDataEntry,
   useRESTRequestBody,
 } from "~/newstore/RESTSession"
-import { useSetting } from "~/newstore/settings"
 
 export default defineComponent({
   setup() {
@@ -291,7 +254,6 @@ export default defineComponent({
       clearContent,
       setRequestAttachment,
       chipDelete,
-      EXPERIMENTAL_URL_BAR_ENABLED: useSetting("EXPERIMENTAL_URL_BAR_ENABLED"),
     }
   },
 })

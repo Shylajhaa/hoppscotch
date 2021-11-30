@@ -4,14 +4,7 @@
     :class="{ 'rounded border border-divider': savingMode }"
   >
     <div
-      class="
-        divide-y divide-dividerLight
-        border-b border-dividerLight
-        flex flex-col
-        top-0
-        z-10
-        sticky
-      "
+      class="divide-dividerLight border-dividerLight sticky top-0 z-10 flex flex-col border-b divide-y"
       :class="{ 'bg-primary': !savingMode }"
     >
       <input
@@ -20,9 +13,9 @@
         type="search"
         autocomplete="off"
         :placeholder="$t('action.search')"
-        class="bg-transparent flex w-full py-2 px-4"
+        class="flex w-full px-4 py-2 bg-transparent"
       />
-      <div class="flex flex-1 justify-between">
+      <div class="flex justify-between flex-1">
         <ButtonSecondary
           svg="plus"
           :label="$t('action.new')"
@@ -62,15 +55,22 @@
         @add-folder="addFolder($event)"
         @edit-folder="editFolder($event)"
         @edit-request="editRequest($event)"
+        @duplicate-request="duplicateRequest($event)"
         @select-collection="$emit('use-collection', collection)"
         @select="$emit('select', $event)"
       />
     </div>
     <div
       v-if="collections.length === 0"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <span class="text-center pb-4">
+      <img
+        :src="`/images/states/${$colorMode.value}/pack.svg`"
+        loading="lazy"
+        class="inline-flex flex-col object-contain object-center w-16 h-16 my-4"
+        :alt="$t('empty.collections')"
+      />
+      <span class="pb-4 text-center">
         {{ $t("empty.collections") }}
       </span>
       <ButtonSecondary
@@ -81,9 +81,9 @@
     </div>
     <div
       v-if="!(filteredCollections.length !== 0 || collections.length === 0)"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <i class="opacity-75 pb-2 material-icons">manage_search</i>
+      <i class="material-icons pb-2 opacity-75">manage_search</i>
       <span class="text-center">
         {{ $t("state.nothing_found") }} "{{ filterText }}"
       </span>
@@ -130,7 +130,11 @@
 import { defineComponent } from "@nuxtjs/composition-api"
 import clone from "lodash/clone"
 import { useReadonlyStream } from "~/helpers/utils/composables"
-import { graphqlCollections$, addGraphqlFolder } from "~/newstore/collections"
+import {
+  graphqlCollections$,
+  addGraphqlFolder,
+  saveGraphqlRequestAs,
+} from "~/newstore/collections"
 
 export default defineComponent({
   props: {
@@ -276,6 +280,12 @@ export default defineComponent({
       this.$data.editingFolderIndex = undefined
       this.$data.editingRequest = undefined
       this.$data.editingRequestIndex = undefined
+    },
+    duplicateRequest({ folderPath, request }) {
+      saveGraphqlRequestAs(folderPath, {
+        ...cloneDeep(request),
+        name: `${request.name} - ${this.$t("action.duplicate")}`,
+      })
     },
   },
 })

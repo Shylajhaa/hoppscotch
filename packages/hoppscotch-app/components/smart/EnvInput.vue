@@ -11,6 +11,7 @@
       class="env-input"
       :class="styles"
       contenteditable="true"
+      spellcheck="false"
       @keydown.enter.prevent="$emit('enter', $event)"
       @keyup="$emit('keyup', $event)"
       @click="$emit('click', $event)"
@@ -460,7 +461,8 @@ export default defineComponent({
       return "choose an environment"
     },
     getEnvValue(value) {
-      if (value) return value
+      if (value) return value.replace(/"/g, "&quot;")
+      // it does not filter special characters before adding them to HTML.
       return "not found"
     },
   },
@@ -480,11 +482,11 @@ export default defineComponent({
   @apply font-medium;
 
   &:empty {
-    line-height: 1.9;
+    @apply leading-loose;
 
     &::before {
       @apply text-secondary;
-      @apply opacity-25;
+      @apply opacity-35;
       @apply pointer-events-none;
 
       content: attr(placeholder);

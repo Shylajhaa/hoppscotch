@@ -1,20 +1,10 @@
 <template>
   <div>
     <div
-      class="
-        bg-primary
-        border-b border-dividerLight
-        flex flex-1
-        top-upperSecondaryStickyFold
-        pl-4
-        z-10
-        sticky
-        items-center
-        justify-between
-      "
+      class="bg-primary border-dividerLight top-upperSecondaryStickyFold sticky z-10 flex items-center justify-between flex-1 pl-4 border-b"
     >
       <span class="flex items-center">
-        <label class="font-semibold text-secondaryLight">
+        <label class="text-secondaryLight font-semibold">
           {{ $t("authorization.type") }}
         </label>
         <tippy
@@ -27,7 +17,7 @@
           <template #trigger>
             <span class="select-wrapper">
               <ButtonSecondary
-                class="rounded-none ml-2 pr-8"
+                class="pr-8 ml-2 rounded-none"
                 :label="authName"
               />
             </span>
@@ -63,19 +53,19 @@
         </tippy>
       </span>
       <div class="flex">
-        <!-- <SmartToggle
+        <!-- <SmartCheckbox
           :on="!URLExcludes.auth"
           @change="setExclude('auth', !$event)"
         >
           {{ $t("authorization.include_in_url") }}
-        </SmartToggle> -->
-        <SmartToggle
+        </SmartCheckbox> -->
+        <SmartCheckbox
           :on="authActive"
           class="px-2"
           @change="authActive = !authActive"
         >
           {{ $t("state.enabled") }}
-        </SmartToggle>
+        </SmartCheckbox>
         <ButtonSecondary
           v-tippy="{ theme: 'tooltip' }"
           to="https://docs.hoppscotch.io/features/authorization"
@@ -93,78 +83,46 @@
     </div>
     <div
       v-if="authType === 'none'"
-      class="flex flex-col text-secondaryLight p-4 items-center justify-center"
+      class="text-secondaryLight flex flex-col items-center justify-center p-4"
     >
-      <span class="text-center pb-4">
+      <img
+        :src="`/images/states/${$colorMode.value}/login.svg`"
+        loading="lazy"
+        class="inline-flex flex-col object-contain object-center w-16 h-16 my-4"
+        :alt="$t('empty.authorization')"
+      />
+      <span class="pb-4 text-center">
         {{ $t("empty.authorization") }}
       </span>
       <ButtonSecondary
         outline
         :label="$t('app.documentation')"
-        to="https://docs.hoppscotch.io"
+        to="https://docs.hoppscotch.io/features/authorization"
         blank
         svg="external-link"
         reverse
+        class="mb-4"
       />
     </div>
-    <div v-if="authType === 'basic'" class="border-b border-dividerLight flex">
-      <div class="border-r border-dividerLight w-2/3">
-        <div
-          class="divide-x divide-dividerLight border-b border-dividerLight flex"
-        >
+    <div v-if="authType === 'basic'" class="border-dividerLight flex border-b">
+      <div class="border-dividerLight w-2/3 border-r">
+        <div class="border-dividerLight flex border-b">
           <SmartEnvInput
-            v-if="EXPERIMENTAL_URL_BAR_ENABLED"
             v-model="basicUsername"
-            class="bg-transparent flex flex-1 py-1 px-4"
             :placeholder="$t('authorization.username')"
-          />
-          <input
-            v-else
-            id="http_basic_user"
-            v-model="basicUsername"
-            class="bg-transparent flex flex-1 py-2 px-4"
-            :placeholder="$t('authorization.username')"
-            name="http_basic_user"
+            styles="bg-transparent flex flex-1 py-1 px-4"
           />
         </div>
-        <div
-          class="divide-x divide-dividerLight border-b border-dividerLight flex"
-        >
+        <div class="border-dividerLight flex border-b">
           <SmartEnvInput
-            v-if="EXPERIMENTAL_URL_BAR_ENABLED"
             v-model="basicPassword"
-            class="bg-transparent flex flex-1 py-1 px-4"
             :placeholder="$t('authorization.password')"
+            styles="bg-transparent flex flex-1 py-1 px-4"
           />
-          <input
-            v-else
-            id="http_basic_passwd"
-            v-model="basicPassword"
-            class="bg-transparent flex flex-1 py-2 px-4"
-            :placeholder="$t('authorization.password')"
-            name="http_basic_passwd"
-            :type="passwordFieldType"
-          />
-          <span>
-            <ButtonSecondary
-              :svg="passwordFieldType === 'text' ? 'eye' : 'eye-off'"
-              @click.native="switchVisibility"
-            />
-          </span>
         </div>
       </div>
       <div
-        class="
-          bg-primary
-          h-full
-          top-upperTertiaryStickyFold
-          min-w-46
-          max-w-1/3
-          p-4
-          z-9
-          sticky
-          overflow-auto
-        "
+        class="bg-primary top-upperTertiaryStickyFold min-w-46 max-w-1/3 z-9 sticky h-full p-4 overflow-auto"
       >
         <div class="p-2">
           <div class="text-secondaryLight pb-2">
@@ -173,45 +131,24 @@
           <SmartAnchor
             class="link"
             :label="`${$t('authorization.learn')} \xA0 →`"
-            to="https://docs.hoppscotch.io/"
+            to="https://docs.hoppscotch.io/features/authorization"
             blank
           />
         </div>
       </div>
     </div>
-    <div v-if="authType === 'bearer'" class="border-b border-dividerLight flex">
-      <div class="border-r border-dividerLight w-2/3">
-        <div
-          class="divide-x divide-dividerLight border-b border-dividerLight flex"
-        >
+    <div v-if="authType === 'bearer'" class="border-dividerLight flex border-b">
+      <div class="border-dividerLight w-2/3 border-r">
+        <div class="border-dividerLight flex border-b">
           <SmartEnvInput
-            v-if="EXPERIMENTAL_URL_BAR_ENABLED"
             v-model="bearerToken"
-            class="bg-transparent flex flex-1 py-1 px-4"
             placeholder="Token"
-          />
-          <input
-            v-else
-            id="bearer_token"
-            v-model="bearerToken"
-            class="bg-transparent flex flex-1 py-2 px-4"
-            placeholder="Token"
-            name="bearer_token"
+            styles="bg-transparent flex flex-1 py-1 px-4"
           />
         </div>
       </div>
       <div
-        class="
-          bg-primary
-          h-full
-          top-upperTertiaryStickyFold
-          min-w-46
-          max-w-1/3
-          p-4
-          z-9
-          sticky
-          overflow-auto
-        "
+        class="bg-primary top-upperTertiaryStickyFold min-w-46 max-w-1/3 z-9 sticky h-full p-4 overflow-auto"
       >
         <div class="p-2">
           <div class="text-secondaryLight pb-2">
@@ -220,7 +157,7 @@
           <SmartAnchor
             class="link"
             :label="`${$t('authorization.learn')} \xA0 →`"
-            to="https://docs.hoppscotch.io/"
+            to="https://docs.hoppscotch.io/features/authorization"
             blank
           />
         </div>
@@ -228,41 +165,20 @@
     </div>
     <div
       v-if="authType === 'oauth-2'"
-      class="border-b border-dividerLight flex"
+      class="border-dividerLight flex border-b"
     >
-      <div class="border-r border-dividerLight w-2/3">
-        <div
-          class="divide-x divide-dividerLight border-b border-dividerLight flex"
-        >
+      <div class="border-dividerLight w-2/3 border-r">
+        <div class="border-dividerLight flex border-b">
           <SmartEnvInput
-            v-if="EXPERIMENTAL_URL_BAR_ENABLED"
             v-model="oauth2Token"
-            class="bg-transparent flex flex-1 py-1 px-4"
             placeholder="Token"
-          />
-          <input
-            v-else
-            id="oauth2_token"
-            v-model="oauth2Token"
-            class="bg-transparent flex flex-1 py-2 px-4"
-            placeholder="Token"
-            name="oauth2_token"
+            styles="bg-transparent flex flex-1 py-1 px-4"
           />
         </div>
         <HttpOAuth2Authorization />
       </div>
       <div
-        class="
-          bg-primary
-          h-full
-          top-upperTertiaryStickyFold
-          min-w-46
-          max-w-1/3
-          p-4
-          z-9
-          sticky
-          overflow-auto
-        "
+        class="bg-primary top-upperTertiaryStickyFold min-w-46 max-w-1/3 z-9 sticky h-full p-4 overflow-auto"
       >
         <div class="p-2">
           <div class="text-secondaryLight pb-2">
@@ -271,7 +187,7 @@
           <SmartAnchor
             class="link"
             :label="`${$t('authorization.learn')} \xA0 →`"
-            to="https://docs.hoppscotch.io/"
+            to="https://docs.hoppscotch.io/features/authorization"
             blank
           />
         </div>
@@ -281,7 +197,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref } from "@nuxtjs/composition-api"
+import { computed, defineComponent, Ref } from "@nuxtjs/composition-api"
 import {
   HoppRESTAuthBasic,
   HoppRESTAuthBearer,
@@ -298,7 +214,6 @@ export default defineComponent({
       { authType: "none", authActive: true },
       setRESTAuth
     )
-
     const authType = pluckRef(auth, "authType")
     const authName = computed(() => {
       if (authType.value === "basic") return "Basic Auth"
@@ -307,31 +222,17 @@ export default defineComponent({
       else return "None"
     })
     const authActive = pluckRef(auth, "authActive")
-
     const basicUsername = pluckRef(auth as Ref<HoppRESTAuthBasic>, "username")
     const basicPassword = pluckRef(auth as Ref<HoppRESTAuthBasic>, "password")
-
     const bearerToken = pluckRef(auth as Ref<HoppRESTAuthBearer>, "token")
-
     const oauth2Token = pluckRef(auth as Ref<HoppRESTAuthOAuth2>, "token")
-
     const URLExcludes = useSetting("URL_EXCLUDES")
-
-    const passwordFieldType = ref("password")
-
     const clearContent = () => {
       auth.value = {
         authType: "none",
         authActive: true,
       }
     }
-
-    const switchVisibility = () => {
-      if (passwordFieldType.value === "text")
-        passwordFieldType.value = "password"
-      else passwordFieldType.value = "text"
-    }
-
     return {
       auth,
       authType,
@@ -342,10 +243,7 @@ export default defineComponent({
       bearerToken,
       oauth2Token,
       URLExcludes,
-      passwordFieldType,
       clearContent,
-      switchVisibility,
-      EXPERIMENTAL_URL_BAR_ENABLED: useSetting("EXPERIMENTAL_URL_BAR_ENABLED"),
     }
   },
 })

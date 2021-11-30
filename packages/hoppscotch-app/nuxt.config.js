@@ -100,6 +100,7 @@ export default {
     "~/plugins/v-focus",
     "~/plugins/v-textarea",
     "~/plugins/vue-apollo",
+    "~/plugins/init-fb.ts",
     "~/plugins/crisp",
     { src: "~/plugins/web-worker", ssr: false },
   ],
@@ -133,8 +134,6 @@ export default {
     "@nuxtjs/dotenv",
     // https://github.com/nuxt-community/composition-api
     "@nuxtjs/composition-api/module",
-    // https://github.com/antfu/unplugin-vue2-script-setup
-    "unplugin-vue2-script-setup/nuxt",
     "~/modules/emit-volar-types.ts",
   ],
 
@@ -298,6 +297,14 @@ export default {
     parallel: true,
     cache: true,
     // hardSource: true,
+    terser: {
+      terserOptions: {
+        // https://github.com/terser/terser#compress-options
+        compress: {
+          pure_funcs: ["console.log", "console.debug", "console.warn"],
+        },
+      },
+    },
   },
 
   // Generate configuration (https://nuxtjs.org/api/configuration-generate)

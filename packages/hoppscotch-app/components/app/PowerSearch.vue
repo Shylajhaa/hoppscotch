@@ -13,41 +13,34 @@
         type="text"
         autocomplete="off"
         name="command"
-        :placeholder="`${$t('app.type_a_command_search')}`"
-        class="
-          bg-transparent
-          border-b border-dividerLight
-          flex flex-shrink-0
-          text-secondaryDark text-base
-          p-6
-        "
+        :placeholder="`${t('app.type_a_command_search')}`"
+        class="border-dividerLight text-secondaryDark flex flex-shrink-0 p-6 text-base bg-transparent border-b"
       />
       <AppFuse
-        v-if="search"
+        v-if="search && show"
         :input="fuse"
         :search="search"
         @action="runAction"
       />
       <div
         v-else
-        class="
-          divide-y divide-dividerLight
-          flex flex-col
-          space-y-4
-          flex-1
-          overflow-auto
-          hide-scrollbar
-        "
+        class="divide-dividerLight hide-scrollbar flex flex-col flex-1 space-y-4 overflow-auto divide-y"
       >
-        <div v-for="(map, mapIndex) in mappings" :key="`map-${mapIndex}`">
-          <h5 class="my-2 text-secondaryLight py-2 px-6">
-            {{ $t(map.section) }}
+        <div
+          v-for="(map, mapIndex) in mappings"
+          :key="`map-${mapIndex}`"
+          class="flex flex-col"
+        >
+          <h5 class="text-secondaryLight px-6 py-2 my-2">
+            {{ t(map.section) }}
           </h5>
           <AppPowerSearchEntry
             v-for="(shortcut, shortcutIndex) in map.shortcuts"
             :key="`map-${mapIndex}-shortcut-${shortcutIndex}`"
             :shortcut="shortcut"
+            :active="shortcutsItems.indexOf(shortcut) === selectedEntry"
             @action="runAction"
+            @mouseover.native="selectedEntry = shortcutsItems.indexOf(shortcut)"
           />
         </div>
       </div>
@@ -56,11 +49,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "@nuxtjs/composition-api"
+import { ref, computed, watch } from "@nuxtjs/composition-api"
 import { HoppAction, invokeAction } from "~/helpers/actions"
 import { spotlight as mappings, fuse } from "~/helpers/shortcuts"
+import { useArrowKeysNavigation } from "~/helpers/powerSearchNavigation"
+import { useI18n } from "~/helpers/utils/composables"
 
-defineProps<{
+const t = useI18n()
+
+const props = defineProps<{
   show: boolean
 }>()
 
@@ -79,4 +76,24 @@ const runAction = (command: HoppAction) => {
   invokeAction(command)
   hideModal()
 }
+
+const shortcutsItems = computed(() =>
+  mappings.reduce(
+    (shortcuts, section) => [...shortcuts, ...section.shortcuts],
+    []
+  )
+)
+
+const { bindArrowKeysListerners, unbindArrowKeysListerners, selectedEntry } =
+  useArrowKeysNavigation(shortcutsItems, {
+    onEnter: runAction,
+  })
+
+watch(
+  () => props.show,
+  (show) => {
+    if (show) bindArrowKeysListerners()
+    else unbindArrowKeysListerners()
+  }
+)
 </script>

@@ -1,67 +1,33 @@
 <template>
-  <Splitpanes
-    class="smart-splitter"
-    :dbl-click-splitter="false"
-    :horizontal="COLUMN_LAYOUT"
-  >
-    <Pane class="hide-scrollbar !overflow-auto">
-      <div class="bg-primary flex p-4 top-0 z-10 sticky">
-        <div class="space-x-2 flex-1 inline-flex">
+  <Splitpanes class="smart-splitter" :horizontal="COLUMN_LAYOUT">
+    <Pane :size="COLUMN_LAYOUT ? 45 : 50" class="hide-scrollbar !overflow-auto">
+      <div class="bg-primary sticky top-0 z-10 flex p-4">
+        <div class="inline-flex flex-1 space-x-2">
           <div class="flex flex-1">
             <input
               id="server"
               v-model="server"
-              v-focus
               type="url"
               autocomplete="off"
               :class="{ error: !serverValid }"
-              class="
-                bg-primaryLight
-                border border-divider
-                rounded-l
-                flex flex-1
-                text-secondaryDark
-                w-full
-                py-2
-                px-4
-                hover:border-dividerDark
-                focus-visible:bg-transparent focus-visible:border-dividerDark
-              "
+              class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark flex flex-1 w-full px-4 py-2 border rounded-l"
               :placeholder="$t('sse.url')"
               :disabled="connectionSSEState"
               @keyup.enter="serverValid ? toggleSSEConnection() : null"
             />
             <label
               for="event-type"
-              class="
-                bg-primaryLight
-                border-t border-b border-divider
-                font-semibold
-                text-secondaryLight
-                py-2
-                px-4
-                truncate
-              "
+              class="bg-primaryLight border-divider text-secondaryLight px-4 py-2 font-semibold truncate border-t border-b"
             >
               {{ $t("sse.event_type") }}
             </label>
             <input
               id="event-type"
               v-model="eventType"
-              class="
-                bg-primaryLight
-                border border-divider
-                rounded-r
-                flex flex-1
-                text-secondaryDark
-                w-full
-                py-2
-                px-4
-                hover:border-dividerDark
-                focus-visible:bg-transparent focus-visible:border-dividerDark
-              "
+              class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark flex flex-1 w-full px-4 py-2 border rounded-r"
               spellcheck="false"
               :disabled="connectionSSEState"
+              @keyup.enter="serverValid ? toggleSSEConnection() : null"
             />
           </div>
           <ButtonPrimary
@@ -78,7 +44,7 @@
         </div>
       </div>
     </Pane>
-    <Pane class="hide-scrollbar !overflow-auto">
+    <Pane :size="COLUMN_LAYOUT ? 65 : 50" class="hide-scrollbar !overflow-auto">
       <AppSection label="response">
         <ul>
           <li>
@@ -130,7 +96,7 @@ export default defineComponent({
       this.debouncer()
     },
   },
-  mounted() {
+  created() {
     if (process.browser) {
       this.worker = this.$worker.createRejexWorker()
       this.worker.addEventListener("message", this.workerResponseHandler)
@@ -175,9 +141,7 @@ export default defineComponent({
                 ts: new Date().toLocaleTimeString(),
               },
             ]
-            this.$toast.success(this.$t("state.connected"), {
-              icon: "sync",
-            })
+            this.$toast.success(this.$t("state.connected"))
           }
           this.sse.onerror = () => {
             this.handleSSEError()
@@ -192,9 +156,7 @@ export default defineComponent({
               color: "#ff5555",
               ts: new Date().toLocaleTimeString(),
             })
-            this.$toast.error(this.$t("state.disconnected"), {
-              icon: "sync_disabled",
-            })
+            this.$toast.error(this.$t("state.disconnected"))
           }
           this.sse.addEventListener(this.eventType, ({ data }) => {
             this.events.log.push({
@@ -205,9 +167,7 @@ export default defineComponent({
           })
         } catch (e) {
           this.handleSSEError(e)
-          this.$toast.error(this.$t("error.something_went_wrong"), {
-            icon: "error_outline",
-          })
+          this.$toast.error(this.$t("error.something_went_wrong"))
         }
       } else {
         this.events.log = [

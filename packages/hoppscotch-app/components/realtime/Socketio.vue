@@ -1,19 +1,21 @@
 <template>
   <Splitpanes
     class="smart-splitter"
-    :dbl-click-splitter="false"
+    :rtl="SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768"
+    :class="{
+      '!flex-row-reverse': SIDEBAR_ON_LEFT && windowInnerWidth.x.value >= 768,
+    }"
     :horizontal="!(windowInnerWidth.x.value >= 768)"
   >
-    <Pane class="hide-scrollbar !overflow-auto">
-      <Splitpanes
-        class="smart-splitter"
-        :dbl-click-splitter="false"
-        :horizontal="COLUMN_LAYOUT"
-      >
-        <Pane class="hide-scrollbar !overflow-auto">
+    <Pane size="75" min-size="65" class="hide-scrollbar !overflow-auto">
+      <Splitpanes class="smart-splitter" :horizontal="COLUMN_LAYOUT">
+        <Pane
+          :size="COLUMN_LAYOUT ? 45 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="request">
-            <div class="bg-primary flex p-4 top-0 z-10 sticky">
-              <div class="space-x-2 flex-1 inline-flex">
+            <div class="bg-primary sticky top-0 z-10 flex p-4">
+              <div class="inline-flex flex-1 space-x-2">
                 <div class="flex flex-1">
                   <label for="client-version">
                     <tippy
@@ -29,21 +31,7 @@
                             id="client-version"
                             v-tippy="{ theme: 'tooltip' }"
                             title="socket.io-client version"
-                            class="
-                              bg-primaryLight
-                              border border-divider
-                              rounded-l
-                              cursor-pointer
-                              flex
-                              font-semibold
-                              text-secondaryDark
-                              py-2
-                              px-4
-                              w-26
-                              hover:border-dividerDark
-                              focus-visible:bg-transparent
-                              focus-visible:border-dividerDark
-                            "
+                            class="bg-primaryLight border-divider text-secondaryDark w-26 hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark flex px-4 py-2 font-semibold border rounded-l cursor-pointer"
                             :value="`Client ${clientVersion}`"
                             readonly
                             :disabled="connectionState"
@@ -61,23 +49,11 @@
                   <input
                     id="socketio-url"
                     v-model="url"
-                    v-focus
                     type="url"
                     autocomplete="off"
                     spellcheck="false"
                     :class="{ error: !urlValid }"
-                    class="
-                      bg-primaryLight
-                      border border-divider
-                      flex flex-1
-                      text-secondaryDark
-                      w-full
-                      py-2
-                      px-4
-                      hover:border-dividerDark
-                      focus-visible:bg-transparent
-                      focus-visible:border-dividerDark
-                    "
+                    class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark flex flex-1 w-full px-4 py-2 border"
                     :placeholder="$t('socketio.url')"
                     :disabled="connectionState"
                     @keyup.enter="urlValid ? toggleConnection() : null"
@@ -85,21 +61,10 @@
                   <input
                     id="socketio-path"
                     v-model="path"
-                    class="
-                      bg-primaryLight
-                      border border-divider
-                      rounded-r
-                      flex flex-1
-                      text-secondaryDark
-                      w-full
-                      py-2
-                      px-4
-                      hover:border-dividerDark
-                      focus-visible:bg-transparent
-                      focus-visible:border-dividerDark
-                    "
+                    class="bg-primaryLight border-divider text-secondaryDark hover:border-dividerDark focus-visible:bg-transparent focus-visible:border-dividerDark flex flex-1 w-full px-4 py-2 border rounded-r"
                     spellcheck="false"
                     :disabled="connectionState"
+                    @keyup.enter="urlValid ? toggleConnection() : null"
                   />
                 </div>
                 <ButtonPrimary
@@ -119,7 +84,10 @@
             </div>
           </AppSection>
         </Pane>
-        <Pane class="hide-scrollbar !overflow-auto">
+        <Pane
+          :size="COLUMN_LAYOUT ? 65 : 50"
+          class="hide-scrollbar !overflow-auto"
+        >
           <AppSection label="response">
             <RealtimeLog :title="$t('socketio.log')" :log="communication.log" />
           </AppSection>
@@ -127,15 +95,14 @@
       </Splitpanes>
     </Pane>
     <Pane
-      v-if="RIGHT_SIDEBAR"
-      max-size="35"
+      v-if="SIDEBAR"
       size="25"
       min-size="20"
       class="hide-scrollbar !overflow-auto"
     >
       <AppSection label="messages">
-        <div class="flex flex-col flex-1 p-4 inline-flex">
-          <label for="events" class="font-semibold text-secondaryLight">
+        <div class="flex inline-flex flex-col flex-1 p-4">
+          <label for="events" class="text-secondaryLight font-semibold">
             {{ $t("socketio.events") }}
           </label>
         </div>
@@ -151,8 +118,8 @@
             :disabled="!connectionState"
           />
         </div>
-        <div class="flex flex-1 p-4 items-center justify-between">
-          <label class="font-semibold text-secondaryLight">
+        <div class="flex items-center justify-between flex-1 p-4">
+          <label class="text-secondaryLight font-semibold">
             {{ $t("socketio.communication") }}
           </label>
           <div class="flex">
@@ -165,7 +132,7 @@
             />
           </div>
         </div>
-        <div class="flex flex-col space-y-2 px-4 pb-4">
+        <div class="flex flex-col px-4 pb-4 space-y-2">
           <div
             v-for="(input, index) of communication.inputs"
             :key="`input-${index}`"
@@ -233,8 +200,9 @@ export default defineComponent({
   setup() {
     return {
       windowInnerWidth: useWindowSize(),
-      RIGHT_SIDEBAR: useSetting("RIGHT_SIDEBAR"),
+      SIDEBAR: useSetting("SIDEBAR"),
       COLUMN_LAYOUT: useSetting("COLUMN_LAYOUT"),
+      SIDEBAR_ON_LEFT: useSetting("SIDEBAR_ON_LEFT"),
       socketIoClients,
     }
   },
@@ -242,7 +210,7 @@ export default defineComponent({
     return {
       // default version is set to v4
       clientVersion: "v4",
-      url: "wss://main-daxrc78qyb411dls-gtw.qovery.io",
+      url: "wss://hoppscotch-socketio.herokuapp.com",
       path: "/socket.io",
       isUrlValid: true,
       connectingState: false,
@@ -269,7 +237,7 @@ export default defineComponent({
       else this.$refs.versionOptions.tippy().enable()
     },
   },
-  mounted() {
+  created() {
     if (process.browser) {
       this.worker = this.$worker.createRejexWorker()
       this.worker.addEventListener("message", this.workerResponseHandler)
@@ -326,9 +294,7 @@ export default defineComponent({
               ts: new Date().toLocaleTimeString(),
             },
           ]
-          this.$toast.success(this.$t("state.connected"), {
-            icon: "sync",
-          })
+          this.$toast.success(this.$t("state.connected"))
         })
         this.io.on("*", ({ data }) => {
           const [eventName, message] = data
@@ -356,15 +322,11 @@ export default defineComponent({
             color: "#ff5555",
             ts: new Date().toLocaleTimeString(),
           })
-          this.$toast.error(this.$t("state.disconnected"), {
-            icon: "sync_disabled",
-          })
+          this.$toast.error(this.$t("state.disconnected"))
         })
       } catch (e) {
         this.handleError(e)
-        this.$toast.error(this.$t("error.something_went_wrong"), {
-          icon: "error_outline",
-        })
+        this.$toast.error(this.$t("error.something_went_wrong"))
       }
 
       logHoppRequestRunToAnalytics({

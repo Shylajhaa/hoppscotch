@@ -7,6 +7,7 @@
 :root {
   @apply antialiased;
 
+  accent-color: var(--accent-color);
   font-variant-ligatures: common-ligatures;
 }
 
@@ -26,20 +27,24 @@
   @apply h-4;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
   @apply hidden;
 }
 
 ::selection {
-  @apply bg-accent;
+  @apply bg-accentDark;
   @apply text-accentContrast;
 }
 
 input::placeholder,
-textarea::placeholder,
-.CodeMirror-empty {
+textarea::placeholder {
   @apply text-secondary;
-  @apply opacity-25;
+  @apply opacity-35;
 }
 
 input,
@@ -62,17 +67,17 @@ body {
   animation: fade 300ms forwards;
   font-size: var(--body-font-size);
   line-height: var(--body-line-height);
-  overflow: overlay;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
 
 @keyframes fade {
   0% {
-    opacity: 0;
+    @apply opacity-0;
   }
+
   100% {
-    opacity: 1;
+    @apply opacity-100;
   }
 }
 
@@ -95,12 +100,15 @@ body {
 }
 
 .material-icons {
+  @apply flex-shrink-0;
+
   font-size: var(--body-line-height) !important;
   width: var(--body-line-height);
-  overflow: hidden;
 }
 
 .svg-icons {
+  @apply flex-shrink-0;
+
   height: var(--body-line-height);
   width: var(--body-line-height);
 }
@@ -178,10 +186,6 @@ a {
   @apply max-h-46;
   @apply items-stretch;
   @apply overflow-y-auto;
-
-  // &::-webkit-scrollbar {
-  //   @apply hidden;
-  // }
 }
 
 hr {
@@ -285,37 +289,6 @@ pre.ace_editor {
   }
 }
 
-input[type="checkbox"] {
-  @apply hidden;
-
-  &,
-  & + label {
-    @apply align-middle;
-    @apply cursor-pointer;
-
-    &::before {
-      @apply border-divider border-2;
-      @apply rounded;
-      @apply inline-flex;
-      @apply items-center;
-      @apply justify-center;
-      @apply text-transparent;
-      @apply h-4;
-      @apply w-4;
-      @apply font-icon;
-
-      content: "\e876";
-      margin: 8px 8px 8px 0;
-    }
-  }
-
-  &:checked + label::before {
-    @apply bg-accent;
-    @apply border-accent;
-    @apply text-primary;
-  }
-}
-
 .info-response {
   @apply text-pink-500;
 }
@@ -345,7 +318,7 @@ input[type="checkbox"] {
     &.toasted-primary {
       @apply bg-tooltip;
       @apply text-primary;
-      @apply justify-start;
+      @apply justify-between;
       @apply shadow;
       @apply font-medium;
       @apply transition;
@@ -418,9 +391,9 @@ input[type="checkbox"] {
 .smart-splitter .splitpanes__splitter::before {
   @apply absolute;
   @apply inset-0;
-  @apply bg-dividerLight;
+  @apply bg-accentLight;
   @apply opacity-0;
-  @apply z-30;
+  @apply z-20;
   @apply transition;
 
   content: "";
@@ -429,7 +402,7 @@ input[type="checkbox"] {
 .smart-splitter .splitpanes__splitter::after {
   @apply absolute;
   @apply inset-0;
-  @apply z-30;
+  @apply z-20;
   @apply transition;
   @apply flex;
   @apply items-center;
@@ -462,29 +435,16 @@ input[type="checkbox"] {
   @apply w-full;
 }
 
-.CodeMirror {
-  @apply !h-auto;
+.cm-focused {
+  @apply select-auto;
+  @apply !outline-none;
 
-  font-size: var(--body-font-size);
-
-  &:not(.CodeMirror-focused) .CodeMirror-activeline-background {
-    background: transparent !important;
-  }
-
-  .CodeMirror-dialog-top {
+  .cm-activeLine {
     @apply bg-primaryLight;
-    @apply border-dividerLight;
-    @apply px-4;
-    @apply py-2;
-    @apply z-5;
   }
 
-  .CodeMirror-scroll {
-    @apply min-h-64;
-  }
-
-  * {
-    font-family: "Roboto Mono", monospace;
+  .cm-activeLineGutter {
+    @apply bg-primaryDark;
   }
 }
 
